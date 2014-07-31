@@ -12,7 +12,8 @@ grammar VarLang;
         | addexp 
         | subexp 
         | multexp 
-        | divexp 
+        | divexp
+        | letexp
         ;
  
  varexp  : 
@@ -52,15 +53,15 @@ grammar VarLang;
  		;
 
  letexp  :
- 			'(' 'let' 
- 		       '(' ( '(' Identifier '=' exp ')' )+  ')'
- 		    exp 
- 		    ')' 
+ 		'(' Let 
+ 			'(' ( '(' Identifier '=' exp ')' )+  ')'
+ 			exp 
+ 			')' 
  		;
 
 // Keywords
 
-LET : 'let' ;
+ Let : 'let' ;
 
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
