@@ -54,7 +54,7 @@ grammar VarLang;
 
  letexp  :
  		'(' Let 
- 			'(' ( '(' Identifier '=' exp ')' )+  ')'
+ 			'(' ( '(' Identifier exp ')' )+  ')'
  			exp 
  			')' 
  		;
