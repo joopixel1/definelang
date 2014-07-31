@@ -103,6 +103,12 @@ public class Reader {
 		return "";
 	}
 
+	public class ConversionException extends RuntimeException {
+		private static final long serialVersionUID = -5663970743340723405L;
+		public ConversionException(String message){
+			super(message);
+		}
+	}
 	/**
 	 * This data adapter takes the parse tree provided by ANTLR and converts it
 	 * to the abstract syntax tree representation used by the rest of this
@@ -134,12 +140,33 @@ public class Reader {
 				case subexp: return new AST.SubExp(visitChildrenHelper(node)); 
 				case multexp: return new AST.MultExp(visitChildrenHelper(node));
 				case divexp: return new AST.DivExp(visitChildrenHelper(node));
-				case letexp: /* TODO */ 
+				case letexp: return convertLetExp(node);
 				case program: 
 				default: 
 					System.out.println("Conversion error (from parse tree to AST): found unknown/unhandled case " + parser.getRuleNames()[node.getRuleContext().getRuleIndex()]);
 			}
 			return null;
+		}
+		
+		/**
+		 *  Syntax: (let ((name value_exp)* ) body)
+		 */  
+		private AST.Exp convertLetExp(RuleNode node){
+			int index = expect(node,0,"(", "let", "(");
+			List<String> names = new ArrayList<String>();	
+			List<AST.Exp> value_exps = new ArrayList<AST.Exp>();	
+			while (match(node,index,"(")) {
+				index++;
+				String name = expectString(node, index++, 1)[0];
+				names.add(name);
+				AST.Exp value_exp = expectExp(node, index++, 1)[0];
+				value_exps.add(value_exp);
+				index = expect(node,index, ")");
+			}
+			expect(node,index++, ")");
+			AST.Exp body = node.getChild(index++).accept(this);
+			expect(node,index++, ")");
+			return new AST.LetExp(names,value_exps,body);
 		}
 
 		public AST.Exp visitTerminal(TerminalNode node) {
@@ -189,6 +216,77 @@ public class Reader {
 					|| s.equals("-") || s.equals("*") || s.equals("/"))
 				return true;
 			return false;
+		}
+		
+		/**
+		 * Expect nth, n+1th, ..., n+mth children of node to be expressions
+		 * @param node - node to be examined.
+		 * @param n - index of first child.
+		 * @param numTokens - expected number of expressions.
+		 * @return an array of n + numTokens expressions, if expectations is met. Otherwise, throws ConversionException.
+		 */
+		protected AST.Exp[] expectExp(RuleNode node, int n, int numTokens){
+			AST.Exp results[] = new AST.Exp[numTokens];
+			for(int i = 0; i< numTokens; i++) {
+				AST.Exp value = node.getChild(n+i).accept(this);
+				if(value == null || value instanceof AST.ErrorExp)
+					throw new ConversionException("Conversion error: " + node.toStringTree(parser) + ", " + 
+							"expected Exp, found " + node.getChild(n+i).toStringTree(parser));
+				results[i] = value;
+			}
+			return results;
+		}
+
+		/**
+		 * Expect nth, n+1th, ..., n+mth children of node to be strings
+		 * @param node - node to be examined.
+		 * @param n - index of first child.
+		 * @param numTokens - expected number of strings.
+		 * @return an array of n + numTokens strings, if expectations is met. Otherwise, throws ConversionException.
+		 */
+		protected String[] expectString(RuleNode node, int n, int numTokens){
+			String results[] = new String[numTokens];
+			for(int i = 0; i< numTokens; i++, n++) {
+				String value = node.getChild(n).toString();
+				if(value == null || node.getChild(n).getChildCount()!=0)
+					throw new ConversionException("Conversion error: " + node.toStringTree(parser) + ", " + 
+							"expected Exp, found " + node.getChild(n).toStringTree(parser));
+				results[i] = value;
+			}
+			return results;
+		}
+
+		/**
+		 * Expect nth, n+1th, ... children of node to match the token 
+		 * @param node - node to be examined.
+		 * @param n - index of child.
+		 * @param tokens - expected strings.
+		 * @return n + tokens.length, if expectations is met. Otherwise, throws ConversionException.
+		 */
+		protected int expect(RuleNode node, int n, String ... tokens){
+			int numTokens = tokens.length;
+			for(int i = 0; i< numTokens; i++) {
+				if (!node.getChild(n+i).toStringTree(parser).equals(tokens[i])) 
+					throw new ConversionException("Conversion error: " + node.toStringTree(parser) + ", " + 
+							"expected " + tokens[i] + ", found " + node.getChild(n+i).toStringTree(parser));
+			}
+			return n+numTokens;
+		}
+		
+		/**
+		 * Test if nth, n+1th, ... children of node match the token 
+		 * @param node - node to be examined.
+		 * @param n - index of child.
+		 * @param tokens - expected strings.
+		 * @return true, if test is met. False, otherwise.
+		 */
+		protected boolean match(RuleNode node, int n, String ... tokens){
+			int numTokens = tokens.length;
+			for(int i = 0; i< numTokens; i++) {
+				if (!node.getChild(n+i).toStringTree(parser).equals(tokens[i])) 
+					return false;
+			}
+			return true;
 		}
 	}
 	
