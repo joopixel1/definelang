@@ -13,7 +13,7 @@ import java.util.List;
 @SuppressWarnings("rawtypes")
 public interface AST {
 	public static abstract class ASTNode implements AST {
-		public abstract Object accept(Visitor visitor);
+		public abstract Object accept(Visitor visitor, Env env);
 	}
 	public static class Program extends ASTNode {
 		Exp _e;
@@ -26,8 +26,8 @@ public interface AST {
 			return _e;
 		}
 		
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 	}
 	public static abstract class Exp extends ASTNode {
@@ -45,8 +45,8 @@ public interface AST {
 			return _name;
 		}
 		
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 	}
 
@@ -61,8 +61,8 @@ public interface AST {
 			return _val;
 		}
 		
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 	}
 
@@ -131,8 +131,8 @@ public interface AST {
 			super(left, right);
 		}
 		
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 	}
 
@@ -154,8 +154,8 @@ public interface AST {
 			super(left, right);
 		}
 		
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 	}
 
@@ -176,8 +176,8 @@ public interface AST {
 			super(left, right);
 		}
 		
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 	}
 
@@ -198,8 +198,8 @@ public interface AST {
 			super(left, right);
 		}
 		
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 	}
 	
@@ -222,32 +222,34 @@ public interface AST {
 			_body = body;
 		}
 		
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 		
 		public List<String> names() { return _names; }
 		
 		public List<Exp> value_exps() { return _value_exps; }
-		
+
+		public Exp body() { return _body; }
+
 	}
 	
 	public static class ErrorExp extends Exp {
-		public Object accept(Visitor visitor) {
-			return visitor.visit(this);
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
 		}
 	}
 	
 	public interface Visitor <T> {
 		// This interface should contain a signature for each concrete AST node.
-		public T visit(AST.AddExp e);
-		public T visit(AST.Const e);
-		public T visit(AST.DivExp e);
-		public T visit(AST.ErrorExp e);
-		public T visit(AST.MultExp e);
-		public T visit(AST.Program p);
-		public T visit(AST.SubExp e);
-		public T visit(AST.VarExp e);
-		public T visit(AST.LetExp e); // New for the varlang
+		public T visit(AST.AddExp e, Env env);
+		public T visit(AST.Const e, Env env);
+		public T visit(AST.DivExp e, Env env);
+		public T visit(AST.ErrorExp e, Env env);
+		public T visit(AST.MultExp e, Env env);
+		public T visit(AST.Program p, Env env);
+		public T visit(AST.SubExp e, Env env);
+		public T visit(AST.VarExp e, Env env);
+		public T visit(AST.LetExp e, Env env); // New for the varlang
 	}	
 }
