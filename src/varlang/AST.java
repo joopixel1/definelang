@@ -206,25 +206,30 @@ public interface AST {
 	/**
 	 * A let expression has the syntax 
 	 * 
-	 *  let name = expression in expression
+	 *  (let ((name expression)* ) expression)
 	 *  
 	 * @author hridesh
 	 *
 	 */
 	public static class LetExp extends Exp {
-		String _name;
-		Exp _e; 
+		List<String> _names;
+		List<Exp> _value_exps; 
 		Exp _body;
 		
-		public LetExp(String name, Exp e, Exp body) {
-			_name = name;
-			_e = e;
+		public LetExp(List<String> names, List<Exp> value_exps, Exp body) {
+			_names = names;
+			_value_exps = value_exps;
 			_body = body;
 		}
 		
 		public Object accept(Visitor visitor) {
 			return visitor.visit(this);
 		}
+		
+		public List<String> names() { return _names; }
+		
+		public List<Exp> value_exps() { return _value_exps; }
+		
 	}
 	
 	public static class ErrorExp extends Exp {
