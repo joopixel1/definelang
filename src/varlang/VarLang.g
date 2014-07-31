@@ -16,7 +16,7 @@ grammar VarLang;
         ;
  
  varexp  : 
- 		Identifier 
+ 		Identifier
  		;
  
  numexp :
@@ -51,15 +51,27 @@ grammar VarLang;
  		    ')' 
  		;
 
+ letexp  :
+ 			'(' 'let' 
+ 		       '(' ( '(' Identifier '=' exp ')' )+  ')'
+ 		    exp 
+ 		    ')' 
+ 		;
+
+// Keywords
+
+LET : 'let' ;
 
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
- 
+
+ Identifier :   Letter LetterOrDigit*;
+ 	
  Number : 
 	DIGIT 
 	| (DIGIT_NOT_ZERO DIGIT+); 
 
- Identifier :   Letter LetterOrDigit*;
+// Identifier :   Letter LetterOrDigit*;
 
  Letter :   [a-zA-Z$_]
 	|   ~[\u0000-\u00FF\uD800-\uDBFF] 
