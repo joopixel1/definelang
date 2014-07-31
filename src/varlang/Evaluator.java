@@ -3,6 +3,7 @@ import static varlang.AST.*;
 import static varlang.Value.*;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import varlang.AST.AddExp;
 import varlang.AST.Const;
@@ -13,73 +14,87 @@ import varlang.AST.Program;
 import varlang.AST.SubExp;
 import varlang.AST.VarExp;
 import varlang.AST.Visitor;
+import varlang.Env.EmptyEnv;
+import varlang.Env.ExtendEnv;
 
 public class Evaluator implements Visitor<Value> {
 	
 	Value valueOf(Program p) {
+		Env env = new EmptyEnv();
 		// Value of a program in this language is the value of the expression
-		return (Value) p.accept(this);
+		return (Value) p.accept(this, env);
 	}
 	
 	@Override
-	public Value visit(AddExp e) {
+	public Value visit(AddExp e, Env env) {
 		List<Exp> operands = e.all();
 		int result = 0;
 		for(Exp exp: operands) {
-			Int intermediate = (Int) exp.accept(this); // Dynamic type-checking
+			Int intermediate = (Int) exp.accept(this, env); // Dynamic type-checking
 			result += intermediate.v(); //Semantics of AddExp in terms of the target language.
 		}
 		return new Int(result);
 	}
 
 	@Override
-	public Value visit(Const e) {
+	public Value visit(Const e, Env env) {
 		return new Int(e.v());
 	}
 
 	@Override
-	public Value visit(DivExp e) {
+	public Value visit(DivExp e, Env env) {
 		List<Exp> operands = e.all();
-		Int lVal = (Int) operands.get(0).accept(this);
-		Int rVal = (Int) operands.get(1).accept(this);
+		Int lVal = (Int) operands.get(0).accept(this, env);
+		Int rVal = (Int) operands.get(1).accept(this, env);
 		return new Int(lVal.v() / rVal.v());
 	}
 
 	@Override
-	public Value visit(ErrorExp e) {
+	public Value visit(ErrorExp e, Env env) {
 		return new Value.DynamicError("Encountered an error expression");
 	}
 
 	@Override
-	public Value visit(MultExp e) {
+	public Value visit(MultExp e, Env env) {
 		List<Exp> operands = e.all();
-		Int lVal = (Int) operands.get(0).accept(this);
-		Int rVal = (Int) operands.get(1).accept(this);
+		Int lVal = (Int) operands.get(0).accept(this, env);
+		Int rVal = (Int) operands.get(1).accept(this, env);
 		return new Int(lVal.v() * rVal.v());
 	}
 
 	@Override
-	public Value visit(Program p) {
-		return (Value) p.e().accept(this);
+	public Value visit(Program p, Env env) {
+		return (Value) p.e().accept(this, env);
 	}
 
 	@Override
-	public Value visit(SubExp e) {
+	public Value visit(SubExp e, Env env) {
 		List<Exp> operands = e.all();
-		Int lVal = (Int) operands.get(0).accept(this);
-		Int rVal = (Int) operands.get(1).accept(this);
+		Int lVal = (Int) operands.get(0).accept(this, env);
+		Int rVal = (Int) operands.get(1).accept(this, env);
 		return new Int(lVal.v() - rVal.v());
 	}
 
 	@Override
-	public Value visit(VarExp e) {
+	public Value visit(VarExp e, Env env) {
 		// Previously, all variables had value 42. New semantics.
-		return new Int(42); // TODO:
+		return env.get(e.name());
 	}	
 
 	@Override
-	public Value visit(LetExp e) { // New for varlang.
-		return new Int(42); // TODO:
+	public Value visit(LetExp e, Env env) { // New for varlang.
+		List<String> names = e.names();
+		List<Exp> value_exps = e.value_exps();
+		List<Value> values = new ArrayList<Value>(value_exps.size());
+		
+		for(Exp exp : value_exps) 
+			values.add((Value)exp.accept(this, env));
+		
+		Env new_env = env;
+		for (int index = 0; index < names.size(); index++)
+			new_env = new ExtendEnv(new_env, names.get(index), values.get(index));
+
+		return (Value) e.body().accept(this, new_env);		
 	}	
 	
 }
