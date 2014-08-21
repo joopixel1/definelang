@@ -27,7 +27,7 @@ public class Reader {
 	private static final int 
 		program = 0, exp = 1, varexp = 2, numexp = 3,
 		addexp = 4, subexp = 5, multexp = 6, divexp = 7,
-		letexp = 8 // New expression for this language.
+		letexp = 8 // New expression for varlang.
 		;
 
 	private static final boolean DEBUG = false;
@@ -133,19 +133,91 @@ public class Reader {
 
 		public AST.Exp visitChildren(RuleNode node) {			
 			switch(node.getRuleContext().getRuleIndex()){
-				case exp: return visitChildrenHelper(node).get(0); 
-				case varexp: return new AST.VarExp(node.getChild(0).getText());
-				case numexp: return visitChildrenHelper(node).get(0);
-				case addexp: return new AST.AddExp(visitChildrenHelper(node)); 
-				case subexp: return new AST.SubExp(visitChildrenHelper(node)); 
-				case multexp: return new AST.MultExp(visitChildrenHelper(node));
-				case divexp: return new AST.DivExp(visitChildrenHelper(node));
+				case varexp: return convertVarExp(node);
+				case numexp: return convertConst(node);
+				case addexp: return convertAddExp(node); 
+				case subexp: return convertSubExp(node); 
+				case multexp: return convertMultExp(node);
+				case divexp: return convertDivExp(node);
 				case letexp: return convertLetExp(node);
+				case exp: return visitChildrenHelper(node).get(0);
 				case program: 
 				default: 
 					System.out.println("Conversion error (from parse tree to AST): found unknown/unhandled case " + parser.getRuleNames()[node.getRuleContext().getRuleIndex()]);
 			}
 			return null;
+		}
+		
+		/**
+		 *  Syntax: Identifier
+		 */  
+		private AST.VarExp convertVarExp(RuleNode node){
+			if(node.getChildCount() > 1)
+				throw new ConversionException("Conversion error: " + node.toStringTree(parser) + ", " + 
+						"expected only Identifier, found " + node.getChildCount() +  " nodes.");
+				
+			String s = node.getChild(0).getText();
+			return new AST.VarExp(s);
+		}
+
+		/**
+		 *  Syntax: Number
+		 */  
+		private AST.Const convertConst(RuleNode node){
+			String s = node.getChild(0).toStringTree(parser);
+			try {
+				int v = Integer.parseInt(s);
+				return new AST.Const(v);
+			} catch (NumberFormatException e) {}
+			throw new ConversionException("Conversion error: " + node.toStringTree(parser) + ", " + 
+					"expected Number, found " + node.getChild(0).toStringTree(parser));
+		}
+		
+		/**
+		 *  Syntax: (+ exp* )
+		 */  
+		private AST.Exp convertAddExp(RuleNode node){
+			int index = expect(node,0,"(", "+");
+			List<AST.Exp> operands = expectOperands(node, index);
+			return new AST.AddExp(operands);
+		}
+		
+		/**
+		 *  Syntax: (- exp* )
+		 */  
+		private AST.Exp convertSubExp(RuleNode node){
+			int index = expect(node,0,"(", "-");
+			List<AST.Exp> operands = expectOperands(node, index);
+			return new AST.SubExp(operands);
+		}
+
+		/**
+		 *  Syntax: (* exp* )
+		 */  
+		private AST.Exp convertMultExp(RuleNode node){
+			int index = expect(node,0,"(", "*");
+			List<AST.Exp> operands = expectOperands(node, index);
+			return new AST.MultExp(operands);
+		}
+
+		/**
+		 *  Syntax: (/ exp* )
+		 */  
+		private AST.Exp convertDivExp(RuleNode node){
+			int index = expect(node,0,"(", "/");
+			List<AST.Exp> operands = expectOperands(node, index);
+			return new AST.DivExp(operands);
+		}
+
+		List<AST.Exp> expectOperands(RuleNode node, int startChildIndex) {
+			int index = startChildIndex; 
+			List<AST.Exp> operands = new ArrayList<AST.Exp>();	
+			while (!match(node,index,")")) {
+				AST.Exp operand = node.getChild(index++).accept(this);
+				operands.add(operand);
+			}
+			expect(node,index++, ")");
+			return operands;
 		}
 		
 		/**
