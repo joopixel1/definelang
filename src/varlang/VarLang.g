@@ -34,7 +34,7 @@ grammar VarLang;
  subexp :  
  		'(' '-' 
  		    exp 
- 		    exp 
+ 		    (exp)+ 
  		    ')' 
  		;
 
@@ -48,7 +48,7 @@ grammar VarLang;
  divexp  : 
  		'(' '/' 
  		    exp 
- 		    exp 
+ 		    (exp)+ 
  		    ')' 
  		;
 
