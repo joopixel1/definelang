@@ -3,9 +3,16 @@ grammar DefineLang;
  // Grammar of this Programming Language
  //  - grammar rules start with lowercase
  program : 
-		exp
+		(definedecl)* (exp)? //Zero or more define declarations followed by an optional expression.
 		;
 
+ definedecl  :
+ 		'(' Define 
+ 			Identifier
+ 			exp
+ 			')' 
+ 		;
+ 		
  exp : 
 		varexp 
 		| numexp 
@@ -14,7 +21,6 @@ grammar DefineLang;
         | multexp 
         | divexp
         | letexp
-        | defineexp
         ;
  
  varexp  : 
@@ -57,13 +63,6 @@ grammar DefineLang;
  		'(' Let 
  			'(' ( '(' Identifier exp ')' )+  ')'
  			exp 
- 			')' 
- 		;
-
- defineexp  :
- 		'(' Define 
- 			Identifier
- 			exp
  			')' 
  		;
 
