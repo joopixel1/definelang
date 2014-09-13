@@ -101,9 +101,9 @@ public class Evaluator implements Visitor<Value> {
 	}	
 	
 	@Override
-	public Value visit(DefineDecl e, Env env) { // New for definelang.
-		String name = e.name();
-		Exp value_exp = e.value_exp();
+	public Value visit(DefineDecl d, Env env) { // New for definelang.
+		String name = d.name();
+		Exp value_exp = d.value_exp();
 		Value value = (Value) value_exp.accept(this, env);
 		initEnv = new ExtendEnv(initEnv, name, value);
 		return new Value.Unit();		
