@@ -388,6 +388,13 @@ public class Reader {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		System.out.print("$ ");
 		String programText = br.readLine();
-		return programText;
+		return runFile(programText);
+	}
+	
+	private String runFile(String programText) throws IOException {
+		if(programText.startsWith("run ")){
+			programText = readFile("build/definelang/" + programText.substring(4));
+		}
+		return programText; 
 	}
 }
