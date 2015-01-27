@@ -163,14 +163,12 @@ public class Reader {
 		/**
 		 *  Syntax: Number
 		 */  
-		private AST.Const convertConst(RuleNode node){
-			String s = node.getChild(0).toStringTree(parser);
+		private AST.NumExp convertConst(RuleNode node){
 			try {
-				int v = Integer.parseInt(s);
-				return new AST.Const(v);
+				return new AST.NumExp(Double.parseDouble(node.getText()));
 			} catch (NumberFormatException e) {}
 			throw new ConversionException("Conversion error: " + node.toStringTree(parser) + ", " + 
-					"expected Number, found " + node.getChild(0).toStringTree(parser));
+					"expected Number, found " + node.getText());
 		}
 		
 		/**
@@ -248,7 +246,7 @@ public class Reader {
 
 			try {
 				int v = Integer.parseInt(s);
-				return new AST.Const(v);
+				return new AST.NumExp(v);
 			} catch (NumberFormatException e) {
 			}
 			// Error case - generally means a new Token is added in the grammar

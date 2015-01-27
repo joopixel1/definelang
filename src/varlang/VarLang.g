@@ -22,7 +22,10 @@ grammar VarLang;
  
  numexp :
  		Number 
- 		;
+  		| '-' Number
+  		| Number Dot Number
+  		| '-' Number Dot Number
+  		;		
   
  addexp :
  		'(' '+'
@@ -62,17 +65,14 @@ grammar VarLang;
 // Keywords
 
  Let : 'let' ;
+ Dot : '.' ;
 
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
 
  Identifier :   Letter LetterOrDigit*;
  	
- Number : 
-	DIGIT 
-	| (DIGIT_NOT_ZERO DIGIT+); 
-
-// Identifier :   Letter LetterOrDigit*;
+ Number : DIGIT+ ;
 
  Letter :   [a-zA-Z$_]
 	|   ~[\u0000-\u00FF\uD800-\uDBFF] 
@@ -87,7 +87,6 @@ grammar VarLang;
 		{Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?;
 
  fragment DIGIT: ('0'..'9');
- fragment DIGIT_NOT_ZERO: ('1'..'9');
 
  AT : '@';
  ELLIPSIS : '...';

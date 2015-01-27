@@ -19,7 +19,7 @@ public class Printer {
 			return result + ")";
 		}
 		
-		public String visit(AST.Const e, Env env) {
+		public String visit(AST.NumExp e, Env env) {
 			return "" + e.v();
 		}
 		
