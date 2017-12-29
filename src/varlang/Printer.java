@@ -30,10 +30,6 @@ public class Printer {
 			return result + ")";
 		}
 		
-		public String visit(AST.ErrorExp e, Env env) {
-			return e.toString();
-		}
-		
 		public String visit(AST.MultExp e, Env env) {
 			String result = "(* ";
 			for(AST.Exp exp : e.all()) 
