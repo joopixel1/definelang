@@ -234,18 +234,11 @@ public interface AST {
 
 	}
 	
-	public static class ErrorExp extends Exp {
-		public Object accept(Visitor visitor, Env env) {
-			return visitor.visit(this, env);
-		}
-	}
-	
 	public interface Visitor <T> {
 		// This interface should contain a signature for each concrete AST node.
 		public T visit(AST.AddExp e, Env env);
 		public T visit(AST.NumExp e, Env env);
 		public T visit(AST.DivExp e, Env env);
-		public T visit(AST.ErrorExp e, Env env);
 		public T visit(AST.MultExp e, Env env);
 		public T visit(AST.Program p, Env env);
 		public T visit(AST.SubExp e, Env env);
