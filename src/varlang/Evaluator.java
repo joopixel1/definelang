@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import varlang.AST.AddExp;
 import varlang.AST.NumExp;
 import varlang.AST.DivExp;
-import varlang.AST.ErrorExp;
 import varlang.AST.MultExp;
 import varlang.AST.Program;
 import varlang.AST.SubExp;
@@ -51,11 +50,6 @@ public class Evaluator implements Visitor<Value> {
 			result = result / rVal.v();
 		}
 		return new NumVal(result);
-	}
-
-	@Override
-	public Value visit(ErrorExp e, Env env) {
-		return new Value.DynamicError("Encountered an error expression");
 	}
 
 	@Override
