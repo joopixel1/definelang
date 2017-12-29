@@ -2,6 +2,8 @@ package definelang;
 
 import java.util.List;
 
+import definelang.AST.UnitExp;
+
 public class Printer {
 	public void print(Value v) {
 		System.out.println(v.toString());
@@ -19,19 +21,20 @@ public class Printer {
 			return result + ")";
 		}
 		
-		public String visit(AST.Const e, Env env) {
+		public String visit(AST.NumExp e, Env env) {
 			return "" + e.v();
 		}
 		
+		@Override
+		public String visit(UnitExp e, Env env) {
+			return "unit";
+		}
+
 		public String visit(AST.DivExp e, Env env) {
 			String result = "(/ ";
 			for(AST.Exp exp : e.all()) 
 				result += exp.accept(this, env) + " ";
 			return result + ")";
-		}
-		
-		public String visit(AST.ErrorExp e, Env env) {
-			return e.toString();
 		}
 		
 		public String visit(AST.MultExp e, Env env) {
