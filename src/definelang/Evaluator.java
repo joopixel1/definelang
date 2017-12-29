@@ -9,7 +9,7 @@ import definelang.Env.*;
 
 public class Evaluator implements Visitor<Value> {
 	
-	Env initEnv = new EmptyEnv(); //New for definelang
+	Env initEnv = new GlobalEnv(); //New for definelang
 	
 	Value valueOf(Program p) {
 		return (Value) p.accept(this, initEnv);
@@ -18,45 +18,45 @@ public class Evaluator implements Visitor<Value> {
 	@Override
 	public Value visit(AddExp e, Env env) {
 		List<Exp> operands = e.all();
-		int result = 0;
+		double result = 0;
 		for(Exp exp: operands) {
-			Int intermediate = (Int) exp.accept(this, env); // Dynamic type-checking
+			NumVal intermediate = (NumVal) exp.accept(this, env); // Dynamic type-checking
 			result += intermediate.v(); //Semantics of AddExp in terms of the target language.
 		}
-		return new Int(result);
+		return new NumVal(result);
 	}
 
 	@Override
-	public Value visit(Const e, Env env) {
-		return new Int(e.v());
+	public Value visit(NumExp e, Env env) {
+		return new NumVal(e.v());
+	}
+
+	@Override
+	public Value visit(UnitExp e, Env env) {
+		return new UnitVal();
 	}
 
 	@Override
 	public Value visit(DivExp e, Env env) {
 		List<Exp> operands = e.all();
-		Int lVal = (Int) operands.get(0).accept(this, env);
-		int result = lVal.v(); 
+		NumVal lVal = (NumVal) operands.get(0).accept(this, env);
+		double result = lVal.v(); 
 		for(int i=1; i<operands.size(); i++) {
-			Int rVal = (Int) operands.get(i).accept(this, env);
+			NumVal rVal = (NumVal) operands.get(i).accept(this, env);
 			result = result / rVal.v();
 		}
-		return new Int(result);
-	}
-
-	@Override
-	public Value visit(ErrorExp e, Env env) {
-		return new Value.DynamicError("Encountered an error expression");
+		return new NumVal(result);
 	}
 
 	@Override
 	public Value visit(MultExp e, Env env) {
 		List<Exp> operands = e.all();
-		int result = 1;
+		double result = 1;
 		for(Exp exp: operands) {
-			Int intermediate = (Int) exp.accept(this, env); // Dynamic type-checking
+			NumVal intermediate = (NumVal) exp.accept(this, env); // Dynamic type-checking
 			result *= intermediate.v(); //Semantics of MultExp.
 		}
-		return new Int(result);
+		return new NumVal(result);
 	}
 
 	@Override
@@ -69,13 +69,13 @@ public class Evaluator implements Visitor<Value> {
 	@Override
 	public Value visit(SubExp e, Env env) {
 		List<Exp> operands = e.all();
-		Int lVal = (Int) operands.get(0).accept(this, env);
-		int result = lVal.v();
+		NumVal lVal = (NumVal) operands.get(0).accept(this, env);
+		double result = lVal.v();
 		for(int i=1; i<operands.size(); i++) {
-			Int rVal = (Int) operands.get(i).accept(this, env);
+			NumVal rVal = (NumVal) operands.get(i).accept(this, env);
 			result = result - rVal.v();
 		}
-		return new Int(result);
+		return new NumVal(result);
 	}
 
 	@Override
@@ -105,8 +105,8 @@ public class Evaluator implements Visitor<Value> {
 		String name = d.name();
 		Exp value_exp = d.value_exp();
 		Value value = (Value) value_exp.accept(this, env);
-		initEnv = new ExtendEnv(initEnv, name, value);
-		return new Value.Unit();		
+		((GlobalEnv) initEnv).extend(name, value);
+		return new Value.UnitVal();		
 	}	
 
 }
