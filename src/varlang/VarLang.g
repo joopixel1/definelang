@@ -1,95 +1,33 @@
 grammar VarLang;
+
+import ArithLang; //Import all rules from Arithlang grammar.
  
- // Grammar of this Programming Language
+ // New elements in the Grammar of this Programming Language
  //  - grammar rules start with lowercase
- program : 
-		exp
-		;
 
- exp : 
-		varexp 
-		| numexp 
-        | addexp 
-        | subexp 
-        | multexp 
-        | divexp
-        | letexp
+ exp returns [Exp ast]: 
+		v=varexp { $ast = $v.ast; }
+		| n=numexp { $ast = $n.ast; }
+        | a=addexp { $ast = $a.ast; }
+        | s=subexp { $ast = $s.ast; }
+        | m=multexp { $ast = $m.ast; }
+        | d=divexp { $ast = $d.ast; }
+        | l=letexp { $ast = $l.ast; }
         ;
- 
- varexp  : 
- 		Identifier
- 		;
- 
- numexp :
- 		Number 
-  		| '-' Number
-  		| Number Dot Number
-  		| '-' Number Dot Number
-  		;		
-  
- addexp :
- 		'(' '+'
- 		    exp 
- 		    (exp)+ 
- 		    ')' 
- 		;
- 
- subexp :  
- 		'(' '-' 
- 		    exp 
- 		    (exp)+ 
- 		    ')' 
+
+ varexp returns [VarExp ast]: 
+ 		id=Identifier { $ast = new VarExp($id.text); }
  		;
 
- multexp : 
- 		'(' '*' 
- 		    exp 
- 		    (exp)+ 
- 		    ')' 
- 		;
- 
- divexp  : 
- 		'(' '/' 
- 		    exp 
- 		    (exp)+ 
- 		    ')' 
- 		;
-
- letexp  :
+ letexp  returns [LetExp ast] 
+        locals [ArrayList<String> names, ArrayList<Exp> value_exps]
+ 		@init { $names = new ArrayList<String>(); $value_exps = new ArrayList<Exp>(); } :
  		'(' Let 
- 			'(' ( '(' Identifier exp ')' )+  ')'
- 			exp 
- 			')' 
+ 			'(' ( '(' id=Identifier e=exp ')' { $names.add($id.text); $value_exps.add($e.ast); } )+  ')'
+ 			body=exp 
+ 			')' { $ast = new LetExp($names, $value_exps, $body.ast); }
  		;
-
-// Keywords
-
- Let : 'let' ;
- Dot : '.' ;
 
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
-
- Identifier :   Letter LetterOrDigit*;
- 	
- Number : DIGIT+ ;
-
- Letter :   [a-zA-Z$_]
-	|   ~[\u0000-\u00FF\uD800-\uDBFF] 
-		{Character.isJavaIdentifierStart(_input.LA(-1))}?
-	|   [\uD800-\uDBFF] [\uDC00-\uDFFF] 
-		{Character.isJavaIdentifierStart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}? ;
-
- LetterOrDigit: [a-zA-Z0-9$_]
-	|   ~[\u0000-\u00FF\uD800-\uDBFF] 
-		{Character.isJavaIdentifierPart(_input.LA(-1))}?
-	|    [\uD800-\uDBFF] [\uDC00-\uDFFF] 
-		{Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?;
-
- fragment DIGIT: ('0'..'9');
-
- AT : '@';
- ELLIPSIS : '...';
- WS  :  [ \t\r\n\u000C]+ -> skip;
- Comment :   '/*' .*? '*/' -> skip;
- Line_Comment :   '//' ~[\r\n]* -> skip;
+ 
