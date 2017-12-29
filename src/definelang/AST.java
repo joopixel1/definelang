@@ -56,20 +56,30 @@ public interface AST {
 		}
 	}
 
-	public static class Const extends Exp {
-		int _val;
+	public static class NumExp extends Exp {
+		double _val;
 
-		public Const(int v) {
+		public NumExp(double v) {
 			_val = v;
 		}
 
-		public int v() {
+		public double v() {
 			return _val;
 		}
 		
 		public Object accept(Visitor visitor, Env env) {
 			return visitor.visit(this, env);
 		}
+	}
+	
+	public static class UnitExp extends Exp {
+		
+		public UnitExp() {}
+
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+
 	}
 
 	public static abstract class CompoundArithExp extends Exp {
@@ -266,19 +276,13 @@ public interface AST {
 		public Exp value_exp() { return _value_exp; }
 
 	}
-
-	public static class ErrorExp extends Exp {
-		public Object accept(Visitor visitor, Env env) {
-			return visitor.visit(this, env);
-		}
-	}
 	
 	public interface Visitor <T> {
 		// This interface should contain a signature for each concrete AST node.
 		public T visit(AST.AddExp e, Env env);
-		public T visit(AST.Const e, Env env);
+		public T visit(AST.NumExp e, Env env);
+		public T visit(AST.UnitExp e, Env env);
 		public T visit(AST.DivExp e, Env env);
-		public T visit(AST.ErrorExp e, Env env);
 		public T visit(AST.MultExp e, Env env);
 		public T visit(AST.Program p, Env env);
 		public T visit(AST.SubExp e, Env env);
