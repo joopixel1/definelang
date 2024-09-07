@@ -7,7 +7,7 @@ import java.util.List;
  * This class hierarchy represents expressions in the abstract syntax tree
  * manipulated by this interpreter.
  *
- * @author hridesh
+ * @author hridesh, clay
  */
 @SuppressWarnings("rawtypes")
 public interface AST {
@@ -62,7 +62,7 @@ public interface AST {
     }
 
     abstract class Exp extends ASTNode {
-
+        /* no-op */
     }
 
     class VarExp extends Exp {
@@ -84,6 +84,7 @@ public interface AST {
     class UnitExp extends Exp {
 
         public UnitExp() {
+            /* no-op */
         }
 
         public Object accept(Visitor visitor, Env env) {

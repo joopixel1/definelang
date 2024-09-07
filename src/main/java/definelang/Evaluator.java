@@ -11,7 +11,7 @@ import static definelang.Value.NumVal;
 import static definelang.Value.UnitVal;
 
 public class Evaluator implements Visitor<Value> {
-    private Env initialEnv = new GlobalEnv(); // new for DefineLang
+    private final Env initialEnv = new GlobalEnv(); // new for DefineLang
 
     Value valueOf(Program p) {
         return (Value) p.accept(this, initialEnv);
@@ -22,8 +22,8 @@ public class Evaluator implements Visitor<Value> {
         List<Exp> operands = e.all();
         double result = 0;
         for (Exp exp : operands) {
-            NumVal intermediate = (NumVal) exp.accept(this, env); // Dynamic type-checking
-            result += intermediate.v(); //Semantics of AddExp in terms of the target language.
+            NumVal intermediate = (NumVal) exp.accept(this, env);
+            result += intermediate.v();
         }
         return new NumVal(result);
     }
@@ -55,8 +55,8 @@ public class Evaluator implements Visitor<Value> {
         List<Exp> operands = e.all();
         double result = 1;
         for (Exp exp : operands) {
-            NumVal intermediate = (NumVal) exp.accept(this, env); // Dynamic type-checking
-            result *= intermediate.v(); //Semantics of MultExp.
+            NumVal intermediate = (NumVal) exp.accept(this, env);
+            result *= intermediate.v();
         }
         return new NumVal(result);
     }
