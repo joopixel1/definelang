@@ -139,7 +139,7 @@ public interface AST {
         }
 
         public Exp fst() {
-            return _rest.getFirst();
+            return _rest.get(0);
         }
 
         public Exp snd() {

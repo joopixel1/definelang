@@ -4,6 +4,7 @@ import definelang.Env.ExtendEnv;
 import definelang.Env.GlobalEnv;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static definelang.AST.*;
@@ -41,7 +42,7 @@ public class Evaluator implements Visitor<Value> {
     @Override
     public Value visit(DivExp e, Env env) {
         List<Exp> operands = e.all();
-        NumVal lVal = (NumVal) operands.getFirst().accept(this, env);
+        NumVal lVal = (NumVal) operands.get(0).accept(this, env);
         double result = lVal.v();
         for (int i = 1; i < operands.size(); i++) {
             NumVal rVal = (NumVal) operands.get(i).accept(this, env);
@@ -75,7 +76,7 @@ public class Evaluator implements Visitor<Value> {
     @Override
     public Value visit(SubExp e, Env env) {
         List<Exp> operands = e.all();
-        NumVal lVal = (NumVal) operands.getFirst().accept(this, env);
+        NumVal lVal = (NumVal) operands.get(0).accept(this, env);
         double result = lVal.v();
         for (int i = 1; i < operands.size(); i++) {
             NumVal rVal = (NumVal) operands.get(i).accept(this, env);
@@ -93,14 +94,13 @@ public class Evaluator implements Visitor<Value> {
     public Value visit(LetExp e, Env env) { // New for varlang.
         List<String> names = e.names();
         List<Exp> value_exps = e.value_exps();
-        List<Value> values = new ArrayList<>(value_exps.size());
-
-        for (Exp exp : value_exps)
-            values.add((Value) exp.accept(this, env));
+        List<Value> values = new ArrayList<>(Collections.nCopies(names.size(), new UnitVal()));
 
         Env new_env = env;
-        for (int i = 0; i < names.size(); i++)
+        for (int i = names.size() - 1; i >= 0; i--){
+            values.add(i, (Value) value_exps.get(i).accept(this, new_env));
             new_env = new ExtendEnv(new_env, names.get(i), values.get(i));
+        }
 
         return (Value) e.body().accept(this, new_env);
     }

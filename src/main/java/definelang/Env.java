@@ -53,7 +53,11 @@ public interface Env {
         }
 
         public synchronized void extend(String var, Value val) {
-            map.put(var, val);
+            if (map.containsKey(var)) {
+                throw new LookupException("Re-declaration of variable " + var +" detected. Discarding redefinition.");
+            } else {
+                map.put(var, val);
+            }
         }
     }
 
